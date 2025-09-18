@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const GENRES = [
   { label: "Romance & Comedy", queryGenres: ["Romance", "Comedy"] },
@@ -89,8 +90,9 @@ export default function Home() {
   const AnimeRow = ({ items }) => (
     <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
       {items.map((item) => (
-        <div
+        <Link
           key={item.id}
+          to={`/anime/${item.id}`}
           className="group min-w-[160px] w-40 flex-shrink-0 relative rounded-lg overflow-hidden cursor-pointer transition-transform duration-300 hover:scale-105"
         >
           <img
@@ -102,7 +104,7 @@ export default function Home() {
           <p className="absolute bottom-2 w-full text-center text-sm font-bold text-white transition-all duration-300 group-hover:text-2xl">
             {item.title.english || item.title.romaji}
           </p>
-        </div>
+        </Link>
       ))}
     </div>
   );

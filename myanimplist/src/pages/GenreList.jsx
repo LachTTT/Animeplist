@@ -1,20 +1,20 @@
-// src/components/AnimeList.jsx
+import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 
-export default function AnimeList({ searchQuery }) {
-  const [results, setResults] = useState([]);
+export default function GenreList() {
+  const { genre } = useParams();
+  const [animes, setAnimes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
 
-  async function fetchAnime(searchTerm = "", pageNumber = 1) {
+  async function fetchByGenre(pageNumber = 1) {
     setLoading(true);
-    const gql = `
-      query ($page: Int, $search: String) {
-        Page(page: $page, perPage: 24 ) {
+    const query = `
+      query ($page: Int, $genre: String) {
+        Page(page: $page, perPage: 24) {
           pageInfo { currentPage lastPage }
-          media(type: ANIME, sort: POPULARITY_DESC, search: $search) {
+          media(genre: $genre, type: ANIME, sort: POPULARITY_DESC) {
             id
             title { romaji english }
             coverImage { large }
@@ -26,51 +26,48 @@ export default function AnimeList({ searchQuery }) {
       const res = await fetch("https://graphql.anilist.co", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: gql,
-          variables: { page: pageNumber, search: searchTerm || undefined },
-        }),
+        body: JSON.stringify({ query, variables: { genre, page: pageNumber } }),
       });
       const data = await res.json();
       const info = data.data.Page.pageInfo;
-      setResults(data.data.Page.media);
+      setAnimes(data.data.Page.media);
       setPage(info.currentPage);
       setTotalPages(info.lastPage);
-    } catch (err) {
-      console.error(err);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchAnime(searchQuery, 1);
-  }, [searchQuery]);
+    fetchByGenre(1);
+  }, [genre]);
 
-  function goToPage(p) {
+  const goToPage = (p) => {
     if (p < 1 || p > totalPages) return;
-    fetchAnime(searchQuery, p);
-  }
+    fetchByGenre(p);
+  };
+
+  if (loading) return <p className="text-center mt-10 text-lg">Loading…</p>;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-8">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
-        {searchQuery ? `Results for “${searchQuery}”` : "All Anime"}
-      </h2>
-
-      {loading && (
-        <p className="text-center text-lg font-semibold">Loading…</p>
-      )}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center sm:text-left">
+        Genre: {genre}
+      </h1>
 
       {/* === Responsive poster grid === */}
-      <div className="
-        grid gap-4 sm:gap-6
-        grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6
-      ">
-        {results.map((anime) => (
-          <div key={anime.id} className="text-center">
+      <div
+        className="
+          grid gap-4 sm:gap-6
+          grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6
+        "
+      >
+        {animes.map((a) => (
+          <div key={a.id} className="text-center">
             <Link
-              to={`/anime/${anime.id}`}
+              to={`/anime/${a.id}`}
               className="block transform transition duration-300 hover:scale-105"
             >
               <div
@@ -79,20 +76,25 @@ export default function AnimeList({ searchQuery }) {
                   w-36 h-60 sm:w-40 sm:h-72 md:w-44 md:h-80
                 "
               >
+                {/* Poster image fills the rectangle */}
                 <img
-                  src={anime.coverImage.large}
-                  alt={anime.title.english || anime.title.romaji}
+                  src={a.coverImage.large}
+                  alt={a.title.english || a.title.romaji}
                   className="w-full h-full object-cover"
                 />
+
+                {/* Gradient overlay for readable text */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+
+                {/* Title text at the bottom */}
                 <p
                   className="
                     absolute bottom-3 left-1/2 -translate-x-1/2
-                    text-white font-semibold text-sm sm:text-base
-                    px-2 text-center line-clamp-2
+                    text-center text-white font-semibold
+                    text-sm sm:text-base px-2 line-clamp-2
                   "
                 >
-                  {anime.title.english || anime.title.romaji}
+                  {a.title.english || a.title.romaji}
                 </p>
               </div>
             </Link>
@@ -100,8 +102,8 @@ export default function AnimeList({ searchQuery }) {
         ))}
       </div>
 
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
+      {/* Pagination (unchanged logic, slightly wider gap) */}
+      {totalPages > 1 && (
         <div className="flex justify-center items-center mt-8 gap-2 flex-wrap">
           <button
             onClick={() => goToPage(page - 1)}
@@ -145,10 +147,6 @@ export default function AnimeList({ searchQuery }) {
           </button>
         </div>
       )}
-
-      {!loading && results.length === 0 && (
-        <p className="text-center text-gray-600 mt-6">No results found.</p>
-      )}
-    </section>
+    </div>
   );
 }
