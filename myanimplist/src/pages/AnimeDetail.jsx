@@ -55,14 +55,14 @@ export default function AnimeDetail() {
     <section className="relative">
       {/* Blurred background layer */}
       <div
-        className="absolute inset-0 bg-cover bg-center blur-2xl brightness-50"
+        className="absolute inset-0 bg-cover bg-center blur"
         style={{ backgroundImage: `url(${bgImage})` }}
       />
 
       {/* Foreground content */}
       <div className="relative px-6 py-10 max-w-5xl mx-auto space-y-10">
         {/* Main Anime Info */}
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-6 bg-blue-950 rounded-2xl px-4 py-8">
           <img
             src={anime.coverImage.extraLarge}
             alt={anime.title.english || anime.title.romaji}
@@ -132,7 +132,7 @@ export default function AnimeDetail() {
 
         {/* Characters Section */}
         {anime.characters && anime.characters.edges.length > 0 && (
-          <div className="text-white">
+          <div className="text-white bg-blue-950 px-4 pt-8 rounded-2xl">
             <h2 className="text-3xl font-bold mb-4">Characters</h2>
             <div className="flex gap-4 overflow-x-auto scrollbar-hide">
               {anime.characters.edges.map(({ node, role }) => (
