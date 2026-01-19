@@ -53,102 +53,118 @@ export default function AnimeList({ searchQuery }) {
   }
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-8">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
-        {searchQuery ? `Results for “${searchQuery}”` : "All Anime"}
-      </h2>
+    <section className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <h2 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+            {searchQuery ? `Results for "${searchQuery}"` : "Discover Anime"}
+          </h2>
+          <p className="text-gray-600 text-lg">
+            {searchQuery ? `Found ${results.length} results` : "Popular anime series and movies"}
+          </p>
+        </div>
 
-      {loading && (
-        <p className="text-center text-lg font-semibold">Loading…</p>
-      )}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        )}
 
-      {/* === Responsive poster grid === */}
-      <div className="
-        grid gap-4 sm:gap-6
-        grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6
-      ">
-        {results.map((anime) => (
-          <div key={anime.id} className="text-center">
+        {/* Modern card grid */}
+        <div className="grid gap-6 sm:gap-8 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {results.map((anime) => (
             <Link
+              key={anime.id}
               to={`/anime/${anime.id}`}
-              className="block transform transition duration-300 hover:scale-105"
+              className="group"
             >
-              <div
-                className="
-                  relative mx-auto rounded-xl shadow-lg overflow-hidden
-                  w-36 h-60 sm:w-40 sm:h-72 md:w-44 md:h-80
-                "
-              >
-                <img
-                  src={anime.coverImage.large}
-                  alt={anime.title.english || anime.title.romaji}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-                <p
-                  className="
-                    absolute bottom-3 left-1/2 -translate-x-1/2
-                    text-white font-semibold text-sm sm:text-base
-                    px-2 text-center line-clamp-2
-                  "
-                >
-                  {anime.title.english || anime.title.romaji}
-                </p>
+              <div className="relative rounded-2xl overflow-hidden shadow-xl bg-white transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                {/* Image container with aspect ratio */}
+                <div className="aspect-[2/3] relative overflow-hidden bg-gray-200">
+                  <img
+                    src={anime.coverImage.large}
+                    alt={anime.title.english || anime.title.romaji}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                </div>
+                
+                {/* Title overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-white font-bold text-sm sm:text-base line-clamp-2 drop-shadow-lg">
+                    {anime.title.english || anime.title.romaji}
+                  </h3>
+                </div>
+
+                {/* Hover indicator */}
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </div>
               </div>
             </Link>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="flex justify-center items-center mt-8 gap-2 flex-wrap">
-          <button
-            onClick={() => goToPage(page - 1)}
-            disabled={page === 1}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter(
-              (p) =>
-                p === 1 || p === totalPages || (p >= page - 2 && p <= page + 2)
-            )
-            .map((p, idx, arr) => {
-              const prev = arr[idx - 1];
-              const showEllipsis = prev && p - prev > 1;
-              return (
-                <span key={p}>
-                  {showEllipsis && <span className="px-2">…</span>}
-                  <button
-                    onClick={() => goToPage(p)}
-                    className={`px-3 py-1 rounded ${
-                      p === page
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                </span>
-              );
-            })}
-
-          <button
-            onClick={() => goToPage(page + 1)}
-            disabled={page === totalPages}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Next
-          </button>
+          ))}
         </div>
-      )}
 
-      {!loading && results.length === 0 && (
-        <p className="text-center text-gray-600 mt-6">No results found.</p>
-      )}
+        {/* Enhanced Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex justify-center items-center mt-12 gap-3 flex-wrap">
+            <button
+              onClick={() => goToPage(page - 1)}
+              disabled={page === 1}
+              className="px-5 py-2.5 bg-white text-gray-700 rounded-lg shadow-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 hover:shadow-lg transition-all font-medium"
+            >
+              ← Previous
+            </button>
+
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(
+                  (p) =>
+                    p === 1 || p === totalPages || (p >= page - 2 && p <= page + 2)
+                )
+                .map((p, idx, arr) => {
+                  const prev = arr[idx - 1];
+                  const showEllipsis = prev && p - prev > 1;
+                  return (
+                    <span key={p} className="flex items-center gap-2">
+                      {showEllipsis && <span className="text-gray-400 px-1">⋯</span>}
+                      <button
+                        onClick={() => goToPage(p)}
+                        className={`min-w-[40px] h-10 rounded-lg font-semibold transition-all ${
+                          p === page
+                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-110"
+                            : "bg-white text-gray-700 hover:bg-gray-100 shadow-md hover:shadow-lg"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    </span>
+                  );
+                })}
+            </div>
+
+            <button
+              onClick={() => goToPage(page + 1)}
+              disabled={page === totalPages}
+              className="px-5 py-2.5 bg-white text-gray-700 rounded-lg shadow-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 hover:shadow-lg transition-all font-medium"
+            >
+              Next →
+            </button>
+          </div>
+        )}
+
+        {/* No results state */}
+        {!loading && results.length === 0 && (
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">🔍</div>
+            <p className="text-xl text-gray-600 font-semibold">No anime found</p>
+            <p className="text-gray-500 mt-2">Try a different search term</p>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
